@@ -5,22 +5,10 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.Days;
-import org.joda.time.Duration;
-import org.joda.time.Hours;
-import org.joda.time.LocalDate;
-import org.joda.time.Minutes;
-import org.joda.time.Period;
-import org.joda.time.PeriodType;
-import org.joda.time.Seconds;
-import org.joda.time.Weeks;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISOPeriodFormat;
-import org.joda.time.format.PeriodFormat;
-import org.joda.time.format.PeriodFormatter;
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.core.parser.ParseException;
+import org.joda.time.*;
+import org.joda.time.format.*;
 
 public class JodaTime {
 	private static final PeriodFormatter PARSER = ISOPeriodFormat.standard().withParseType(PeriodType.days());
@@ -28,6 +16,8 @@ public class JodaTime {
 	private static final Locale CURRENT_LOCALE = Locale.GERMANY;
 	private static final PeriodFormatter DELIVERY_PERIOD_PARSER = PeriodFormat.wordBased(CURRENT_LOCALE);
 	private static final DateTimeFormatter REVIEW_DATE_PARSER = DateTimeFormat.forPattern("d MMM yyyy")
+			.withLocale(Locale.FRENCH);
+	private static final DateTimeFormatter REVIEW_DATE = DateTimeFormat.forPattern("dd MMM yyyy HH:mm")
 			.withLocale(Locale.FRENCH);
 	private static final LocalDate NOW = LocalDate.now();
 	// La date de livraison aura lieu le, Mardi 22 Mars 2022
@@ -109,6 +99,28 @@ public class JodaTime {
 		System.out.println("[ Date time: " + nowdatetime + " <=> Local date: " + localDatenowdatetime + " ]");
 		System.out.println("[ Local date: " + localDatenowdatetime + " ] <=>  Date time: " + nowdatetime + " ]");
 
+		DateTimeFormatter PATTERN_DATE_USA = DateTimeFormat.forPattern("dd MMM yyyy HH:mm").withLocale(Locale.US).withZone(DateTimeZone.UTC);
+		String formatDateClient = "26 mars 2022 16:22";
+		DateTime now = DateTime.now();
+		System.out.println(now+" Convert date now to string: "+now.toString(REVIEW_DATE));
+
+		//https://stackoverflow.com/questions/21188027/runtime-exception-while-trying-to-parse-date-time-using-joda-datetimeformatter
+		// https://github.com/JodaOrg/joda-time/issues/240
+		// Pour JodaTime, h est une demi-journée. Donc il faut utiliser H (ou éventuellement k).
+		DateTime datereview = REVIEW_DATE.parseDateTime(formatDateClient);
+		//String date 26 mars 2022 16:22 = > Joda time 2022-03-26T16:22:00.000+01:00 avec Time zone(withZone(DateTimeZone.forID("Europe/Paris")))
+		System.out.println("String date "+formatDateClient+" = > Joda time "+datereview);
+
+		String rawtextdate = "Le 26 mars 2022 à 16:22";
+
+		String datetext = StringUtils.substringAfter(rawtextdate,"Le");
+		datetext = (datetext.replaceAll("à","")).trim();
+		datetext = datetext.replaceAll("\\s+"," ");
+		System.out.println(" Date text reviews : "+REVIEW_DATE.parseDateTime(datetext));
+		System.out.println(" Date text reviews : "+LocalDateTime.parse(datetext, REVIEW_DATE).toDate());
+
+
+
 		// Convert Period to Joda-Time Duration
 		Duration duration = periodweek.toStandardDuration().toDuration();
 		long durationofdays = duration.getStandardDays();
@@ -140,5 +152,55 @@ public class JodaTime {
 		// Number format to french local
 		Number number = 123000000;
 		System.out.println(" Format local french: " + formatNumberFrenchLocal(number));
+
+
+		String x = "22/06/2012";
+		String y = "25/10/2014";
+
+		String datestart = x;
+		String datestop = y;
+
+
+		DateTimeFormatter  format = DateTimeFormat.forPattern("dd/mm/yyyy");
+
+		DateTime d1 = null;
+		DateTime d2 = null;
+
+		try {
+			d1 =  format.parseDateTime(datestart);
+			d2 = format.parseDateTime(datestop);
+
+			DateTime dt1 = new DateTime(d1);
+			DateTime dt2 = new DateTime(d2);
+
+			Period periodDateTime = new Period (dt1,dt2);
+
+			String stringPeriodDateTime = periodDateTime.toString();
+			//calculate days
+			int daysPeriodDateTime = Days.daysBetween(dt1, dt2).getDays();
+
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+
+		org.joda.time.format.DateTimeFormatter formatter = org.joda.time.format.DateTimeFormat.forPattern("yyyy-MM-dd'T'hh:mm:ss'Z'").withZone(DateTimeZone.UTC);
+		DateTime dateTime = formatter.parseDateTime("2022-04-19T06:00:00Z").withZone(DateTimeZone.UTC);
+		System.out.println("Date time joda: "+dateTime);
+
+
+		Pattern DELIVERY_DATE_PATTERN = Pattern.compile("yyyy-MM-dd'T'hh:mm:ss'Z'");
+
+		/*String localDate = "2022-04-19T06:00:00Z";
+		Pattern DELIVERY_DATE_PATTERN = Pattern.compile("dd-MMM-yyyy hh:mm:ss a Z").withZone(DateTimeZone.UTC)("yyyy-MM-ddTHH:mm:ssZ");
+		Matcher matcherDate = DELIVERY_DATE_PATTERN.matcher("2022-04-19T06:00:00Z");
+		LocalDateTime localDateTime = LocalDateTime.parse(localDate);*/
+		Matcher matcherDate = DELIVERY_DATE_PATTERN.matcher("2022-04-19T06:00:00Z");
+		if(matcherDate.find()) {
+			System.out.println(" It's the date correct: "+dateTime);
+		}
+
+
 	}
 }

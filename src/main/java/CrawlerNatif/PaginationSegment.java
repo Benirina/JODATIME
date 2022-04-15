@@ -2,90 +2,108 @@ package CrawlerNatif;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class PaginationSegment
 {
-    public static void main( String[] args )
-    {
-        final StringBuilder sb1 = new StringBuilder();
-        BufferedReader bufferedReader = null;
-        OutputStream outputStream = null;
-
-        try
-        {
-            // Parameter pagination counts
-            int startCount = 0;
-            int limitCount = 841;
-
-            // Loop 32 times, 158 schools / 5 (pagination amount)
-            for( int i = 0; i < 841; i++ )
-            {
-                // Open a connection to the supplied URL
-                final URLConnection urlConnection = new URL( "https://www.developpez.com/" ).openConnection();
-                // Tell the URL we are sending output
-                urlConnection.setDoOutput( true );
-                // The stream we will be writing to the URL
-                outputStream = urlConnection.getOutputStream();
-
-                // Setup parameters for pagination
-                final String params = "qstart=" + startCount + "&limit=" + limitCount;
-                // Get the bytes of the pagination parameters
-                final byte[] outputInBytes = params.getBytes( "UTF-8" );
-                // Write the bytes to the URL
-                outputStream.write( outputInBytes );
-
-                // Get and read the URL response
-                bufferedReader = new BufferedReader( new InputStreamReader( urlConnection.getInputStream() ) );
-                StringBuilder response = new StringBuilder();
-                String inputLine;
-
-                // Loop over the response and read each line appending it to the StringBuilder
-                while( (inputLine = bufferedReader.readLine()) != null )
-                {
-                    response.append( inputLine );
-                }
-
-                // Do the same as before just with a String instead
-                final Document doc = Jsoup.parse( response.toString() );
-                Elements links = doc.select( "div.pagination" );
-                links.forEach( e -> sb1.append( e.text() ).append( System.getProperty( "line.separator" ) ) );
-
-                // Increment the pagination parameters
-                startCount += 4;
-                limitCount += 4;
+    public static void extractTableUsingJsoup(String url, String tableId){
+        Document doc;
+        try {
+            doc = Jsoup.connect(url).get();
+            Element table = doc.getElementById(tableId);
+            Elements tds = table.getElementsByTag("td");
+            for (Element td : tds) {
+                System.out.println("\n"+td.text());
             }
-
-            System.out.println( sb1.toString() );
-            //jTextArea1.setText(sb1.toString());
-        }
-        catch( Exception e )
-        {
+        } catch (IOException e) {
             e.printStackTrace();
         }
-        finally
-        {
-            try
-            {
-                // Close the bufferedReader
-                if( bufferedReader != null )
-                {
-                    bufferedReader.close();
-                }
+    }
+    public static void main( String[] args )
+    {
+        try{
+            /*
+            int numPages = 5; // the number of pages to scrape
+            for (int i = 0; i < numPages; i++) {
+                String url = "https://www.actksa.com/ar/training-courses/training-in/Jeddah?page=" + i;
 
-                // Close the outputStream
-                if( outputStream != null )
-                {
-                    outputStream.close();
+                Document doc = Jsoup.connect(url).get();
+
+                Elements data = doc.select("tr");
+                int size = data.size();
+                System.out.println("doc: " + doc);
+                System.out.println("data: " + data);
+                System.out.println("size: " + size);
+                for (int j = 0; j < size; j++) {
+                    String title = data.select("td.wp-60")
+                            .eq(j)
+                            .text();
+                    String detailUrl = data.select("td.wp-60")
+                            .select("a")
+                            .eq(j)
+                            .attr("href");
+                    parseItems.add(new ParseItem(title, detailUrl));
+                    System.out.println("items .title: " + title);
                 }
+            }*/
+
+            String url  = "https://www.actksa.com/ar/training-courses/training-in/Jeddah";
+            //get first link
+            //String link = Jsoup.connect(url).get().select(".pull-right > ul.pagination > li > a").attr("href");
+            //an int just to count up links
+            //int i = 1;
+            //System.out.println("pagination-link_"+ i + "\t" + link);
+            //parse next page using link
+            //check if the div on next page has more than one link in it
+            /*while(Jsoup.connect(link).get().select(".pull-right").size() >1){
+                link = Jsoup.connect(link).get().select(".pull-right > ul.pagination > li > a").get(1).attr("href");
+                System.out.println("pagination-link_"+ (++i) +"\t" + link);
+            }*/
+
+            //https://www.htmlgoodies.com/html5/web-page-scraping-with-jsoup/
+            Document doc = Jsoup.connect(url).get();
+            Elements links = doc.select(".pagination > li > a[href]");
+            System.out.println("Size elements: " + links.size());
+            int loop = 0;
+            Collection<Element> listlinks = new ArrayList<Element>();
+            Collection<Element> dataTable = new ArrayList<Element>();
+            Elements dataelements = doc.select(".table-hover > tbody > tr > td");
+            for(Element linkhref:links) {
+                if(loop<links.size()-1) {
+                    listlinks.add(linkhref);
+                    System.out.println("Lien : https://www.actksa.com" + linkhref.attr("href"));
+                    for(Element datatab : dataelements){
+                        dataTable.add(datatab);
+                        System.out.println("Data of table : " + datatab.attr("tr")+" => "+datatab.text());
+                    }
+                }
+                loop++;
             }
-            catch( IOException e )
-            {
-                e.printStackTrace();
-            }
+            System.out.println(" Collection des liens ");
+            //Collection<Element> dataTable = new ArrayList<Element>();
+            listlinks.forEach(
+                    href ->{
+                        System.out.println("Lien : https://www.actksa.com"+href.attr("href")+" Texte sur le lien: "+href.text());
+
+                    }
+            );
+            dataTable.forEach(
+                    data ->{
+                        System.out.println("Data : "+data.text());
+
+                    }
+            );
+            //System.out.println(" Collection of data table:  "+dataelements);
+        }catch(Exception e){
+            e.getStackTrace();
         }
+
+
     }
 }

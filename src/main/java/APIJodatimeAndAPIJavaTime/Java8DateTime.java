@@ -1,6 +1,7 @@
 package APIJodatimeAndAPIJavaTime;
 
 import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.Date;
 import java.util.Locale;
 
@@ -45,5 +46,20 @@ public class Java8DateTime {
 		LocalDate localdate = LocalDate.now();
 		DateTime datetime = localdate.toDateTimeAtStartOfDay();
 		System.out.println(" Date locale" + localdate + " to date time: " + datetime);
+
+
+
+		java.time.format.DateTimeFormatter dtformat = new DateTimeFormatterBuilder()
+				.parseCaseInsensitive()
+				.appendPattern("d MMMM uuuu")
+				.toFormatter(Locale.ENGLISH);
+
+		java.time.LocalDate since = java.time.LocalDate.parse("17 april 2010", dtformat);
+		java.time.LocalDate now = java.time.LocalDate.parse("15 april 2011", dtformat);
+
+		java.time.Period period = java.time.Period.between(since, now);
+		String strPeriod = String.format("%d years %d months %d days", period.getYears(), period.getMonths(),
+				period.getDays());
+		System.out.println(strPeriod);
 	}
 }
