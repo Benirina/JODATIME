@@ -1,6 +1,7 @@
 package APIJodatimeAndAPIJavaTime;
 
 import java.text.NumberFormat;
+import java.util.Date;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -199,7 +200,13 @@ public class JodaTime {
 		Matcher matcherDate = DELIVERY_DATE_PATTERN.matcher("2022-04-19T06:00:00Z");
 		if(matcherDate.find()) {
 			System.out.println(" It's the date correct: "+dateTime);
+
 		}
+
+		String textdate = "2022-02-24";
+		DateTimeFormatter REVIEW_DATE = DateTimeFormat.forPattern("yyyy-MM-dd").withLocale(Locale.FRENCH);
+		Date localdatetime = LocalDateTime.parse(textdate,REVIEW_DATE).toDate();
+		System.out.println(" Date java "+localdatetime);
 
 
 	}
