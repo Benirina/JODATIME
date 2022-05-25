@@ -5,6 +5,9 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.util.Date;
 import java.util.Locale;
 
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
@@ -16,6 +19,22 @@ public class Java8DateTime {
 	// yyyy").withLocale(Locale.FRENCH);
 
 	public static void main(String[] args) {
+
+		String title = StringEscapeUtils.escapeHtml4("HP <span itemprop=\"mpn\">11</span> Cabezal de impresión negro (C4810A)");
+		title = title.replace(StringEscapeUtils.escapeHtml4(title), " ");
+		String result = ("HP <span itemprop=\"mpn\">11</span> Cabezal de impresión negro (C4810A)").replaceAll("<[^>]*>", "");
+		/* https://www.baeldung.com/java-remove-html-tags
+			<dependency>
+				<groupId>net.sourceforge.htmlcleaner</groupId>
+				<artifactId>htmlcleaner</artifactId>
+				<version>2.25</version>
+			</dependency>
+		 */
+		//String result = new HtmlCleaner(props).clean(html).getText().toString();
+
+		String delvery = StringUtils.stripAccents("Plazo de entrega 1-2 días");
+
+
 		DateTime dateTime = new DateTime("2012-12-25");
 		DateTimeFormatter formatter = DateTimeFormat.forPattern("EEEE dd MMMM yyyy HH:mm:ss");
 		DateTimeFormatter frenchFmt = formatter.withLocale(Locale.FRENCH);
@@ -53,6 +72,8 @@ public class Java8DateTime {
 				.parseCaseInsensitive()
 				.appendPattern("d MMMM uuuu")
 				.toFormatter(Locale.ENGLISH);
+
+
 
 		java.time.LocalDate since = java.time.LocalDate.parse("17 april 2010", dtformat);
 		java.time.LocalDate now = java.time.LocalDate.parse("15 april 2011", dtformat);

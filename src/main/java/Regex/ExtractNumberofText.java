@@ -1,11 +1,16 @@
 package Regex;
 
+import org.apache.commons.lang3.StringUtils;
+import org.joda.time.Period;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ExtractNumberofText {
+    private static final Pattern DELIVERY_PERIOD_PATTERN = Pattern.compile("([0-9]+\\s*)(?=(dias|mes|jour|mois|giorni))");
+    private static Pattern ADVANCE_PATTERN = Pattern.compile("(\\d+)\\s*(dias|mese|jour|mois|giorni|mes)");
     private static Pattern EXTRACT_PERIOD_DELIVE_PRODUCT_HOME_PATTERN = Pattern.compile("(\\d+((?=\\s*jour)|(?=€)))");
     private static String rawtextdellivery = "Livraison  entre 7 et 10 jour(s) à partir de 31€";
 
@@ -33,14 +38,29 @@ public class ExtractNumberofText {
         }
         return null;
     }
+    private static String otherPatternRegex(String extractedValue) {
+        String inputText = StringUtils.stripAccents(extractedValue);
+        Matcher periodMatcher = DELIVERY_PERIOD_PATTERN.matcher(inputText);
+        //boolean isTextPresent = periodMatcher.matches();
+        if (periodMatcher.find()) {
+            String periodDeliveryProduct = periodMatcher.group();
+            return periodDeliveryProduct;
+        }
+        return null;
+    }
+
 
 
     public static void main(String[] args) {
+        Period p = Period.days(Integer.parseInt(otherPatternRegex(rawtextdellivery)));
+        int dayOfPeriod = p.toStandardDays().getDays();
         //System.out.println(" Result: "+returnTextMatcherPattern(rawtextdellivery));
         Collection<String> listMatchers = returnFullTextMatcherPattern(rawtextdellivery);
         System.out.println(" Size of list: "+listMatchers.size());
         listMatchers.forEach(
                 string ->{System.out.println(" ******** "+string);}
         );
+
+
     }
 }
